@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { getUserDetails } from '../actions';
+import axios from 'axios';
 
 class HomeView extends Component {
     constructor(){

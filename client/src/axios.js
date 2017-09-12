@@ -10,5 +10,4 @@ export const initialAxiosConfig = () => {
 
 export const configureAxiosDefaults = (options) => {
     authAxios.defaults.headers.common['Authorization'] = `Bearer ${ options.accessToken }`;
-    console.log(authAxios.defaults);
 }
