@@ -31,7 +31,6 @@ export const makeRoutes = () => {
             <ProtectedRoute path="/home" component={HomeView} redirectPath='/login'/>
 
             <Route path="/login-callback" render={(props) => {
-                {/* if(Auth.isAuthenticated()) return <Redirect to={{ pathname: '/home' }} /> */}
                 handleAuthentication(props);
                 return <LoadingView />
             }}/>

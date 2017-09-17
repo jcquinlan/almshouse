@@ -6,6 +6,8 @@ import axios from 'axios';
 class HomeView extends Component {
     constructor(){
         super();
+
+        this.getPrivate = this.getPrivate.bind(this);
     }
 
     componentDidMount(){
@@ -20,6 +22,7 @@ class HomeView extends Component {
             <div>
                 { userError && this.renderUserErrors() }
                 Home! - { userData ? this.renderUsername() : 'Anonymous' }
+                <button onClick={this.getPrivate}>Get Private</button>
             </div>
         );
     }
@@ -32,6 +35,12 @@ class HomeView extends Component {
     renderUsername() {
         const { userData } = this.props;
         return <span>{ userData.nickname }</span>
+    }
+
+    getPrivate(){
+        axios.get('/private').then(res => {
+            console.log(res);
+        });
     }
 }
 

@@ -21,13 +21,23 @@ class Auth {
           this.getProfile = this.getProfile.bind(this);
     }
 
-    login () {
+    login() {
         this.auth0.authorize();
     }
 
     searchForLogin() {
         if(this.isAuthenticated()) {
-            const profile = jwtDecode(localStorage.getItem('id_token'));
+            const idToken = localStorage.getItem('id_token');
+            const accessToken = localStorage.getItem('access_token');
+
+            // Configure axios to handled authenticated requests from the start.
+            configureAxiosDefaults({
+                accessToken,
+                idToken
+            });
+
+            // Decode the user information from the JWT in localStorage
+            const profile = jwtDecode(idToken);
             store.dispatch(addUserData(profile));
         }
     }
@@ -38,7 +48,7 @@ class Auth {
                 // Once we have our access token, make sure it's
                 // automatically added to all outgoing web requests
                 // for OAuth purposes.
-                configureAxiosDefaults({ accessToken: authResult.accessToken });
+                configureAxiosDefaults({ accessToken: authResult.accessToken, idToken: authResult.idToken });
                 this.setSession(authResult);
                 store.dispatch(addUserData(authResult.idTokenPayload));
             } else if (err) {

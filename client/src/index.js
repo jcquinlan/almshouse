@@ -9,9 +9,12 @@ import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
 import {
   BrowserRouter as Router,
+  Route
 } from 'react-router-dom';
 
 import rootReducer from './reducers';
+
+import Auth from './auth';
 
 export const store = createStore(
   rootReducer,
@@ -22,7 +25,13 @@ ReactDOM.render(
     (
         <Provider store={store}>
             <Router>
-                <App />
+                <Route path="/" render={() => {
+                    // When entering the application, check
+                    // to see if the user already has their information
+                    // in localStorage
+                    Auth.searchForLogin();
+                    return <App />
+                }} />
             </Router>
         </Provider>
     ),

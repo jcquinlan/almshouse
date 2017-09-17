@@ -1,21 +1,35 @@
-var Housemate = require('../models/Housemate.js').housemateModel;
+const HousemateModel = require('../db/models/HousemateModel');
+const responses = require('../db/helpers/responseGenerators');
 
-class HousemateController {
-    constructor() {
-        
-    }
+const createHousemate = (req, res) => {
+    const options = req.body;
 
-    createHousemate(housemate) {
-         
-    }
+    var newHousemate = new HousemateModel(options);
 
-    getHousemates() {
-        
-    }
-
-    getHousemate(housemateId) {
-        
-    }
+    newHousemate.save((error, housemate) => {
+        return responses.createdResponse(res, housemate);
+    });
 }
 
-exports.housemateController = new HousemateController();
+const getHousemates = (req, res) => {
+    HousemateModel.find((error, housemates) => {
+        return responses.listResponse(res, housemates);
+    });
+}
+
+const editHousemate = (req, res) => {
+    const options = req.body;
+    const id = req.params.id;
+
+    HousemateModel.findOneAndUpdate({ _id: id }, options, {}, (error, housemate) => {
+        if(error) return responses.errorResponse(res, 400, 'Error updating Housemate.');
+
+        return responses.updatedResponse(res, housemate);
+    });
+}
+
+module.exports = {
+    createHousemate,
+    getHousemates,
+    editHousemate
+};
