@@ -28,12 +28,12 @@ export const makeRoutes = () => {
                 return <LoginView {...props}/> 
             }}/>
 
-            <ProtectedRoute path="/home" component={HomeView} redirectPath='/login'/>
-
             <Route path="/login-callback" render={(props) => {
                 handleAuthentication(props);
                 return <LoadingView />
             }}/>
+
+            <ProtectedRoute path="/home" component={HomeView} redirectPath='/login'/>
         </Switch>
     )
 }

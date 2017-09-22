@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { getUserDetails } from '../actions';
+import { getUserDetails } from '../actions/userActions';
 import axios from 'axios';
+
+import NewHousemateForm from '../components/newHousemateForm';
 
 class HomeView extends Component {
     constructor(){
@@ -17,12 +19,14 @@ class HomeView extends Component {
     }
     
     render(){
-        const { userError, userData } = this.props;
+        const { userError, userData, housemateData } = this.props;
+        
         return (
             <div>
                 { userError && this.renderUserErrors() }
+                { housemateData && housemateData.firstName }
                 Home! - { userData ? this.renderUsername() : 'Anonymous' }
-                <button onClick={this.getPrivate}>Get Private</button>
+                { !housemateData && <NewHousemateForm /> }
             </div>
         );
     }
@@ -48,6 +52,8 @@ const mapStateToProps = state => {
     return {
         userData: state.user.data,
         userError: state.user.error,
+        housemateData: state.housemate.data,
+        housemateError: state.housemate.error,
     }
 }
 

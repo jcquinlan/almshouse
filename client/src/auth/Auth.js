@@ -1,7 +1,10 @@
 import auth0 from 'auth0-js';
+import axios from 'axios';
 import { configureAxiosDefaults } from '../axios';
 import { store } from '../index';
-import { addUserData, removeUserData } from '../actions';
+import { addUserData, removeUserData } from '../actions/userActions';
+import { addHousemateData, removeHousemateData } from '../actions/housemateActions';
+import HousemateController from '../controllers/HousemateController';
 import jwtDecode from 'jwt-decode';
 
 class Auth {
@@ -39,6 +42,27 @@ class Auth {
             // Decode the user information from the JWT in localStorage
             const profile = jwtDecode(idToken);
             store.dispatch(addUserData(profile));
+
+            // If we have the user's housemate information locally, store it in Redux.
+            // We use this separately to keep track of what info one is allowed to see,
+            // Instead of querying Mongo everytime using the ID sent by auth0.
+            if(this.hasHousemateLocally()) {
+                const housemate = localStorage.getItem("housemate");
+                store.dispatch(addHousemateData(JSON.parse(housemate)));
+            } else {
+                HousemateController.getSelf()
+                    .then(this.handleSelfResponse)
+            }
+        }
+    }
+
+    handleSelfResponse(res) {
+        const housemate = res.data.payload;
+        // We want to ensure that we don't save the string `null` to localStorage
+        // if we don't get a housemate back. So we check to make sure something is returned
+        if(housemate) {
+            localStorage.setItem('housemate', JSON.stringify(housemate));
+            store.dispatch(addHousemateData(housemate));
         }
     }
       
@@ -49,8 +73,13 @@ class Auth {
                 // automatically added to all outgoing web requests
                 // for OAuth purposes.
                 configureAxiosDefaults({ accessToken: authResult.accessToken, idToken: authResult.idToken });
+
                 this.setSession(authResult);
                 store.dispatch(addUserData(authResult.idTokenPayload));
+
+                HousemateController.getSelf()
+                    .then(this.handleSelfResponse);
+                    
             } else if (err) {
                 console.log(err);
             }
@@ -70,8 +99,10 @@ class Auth {
         localStorage.removeItem('access_token');
         localStorage.removeItem('id_token');
         localStorage.removeItem('expires_at');
+        localStorage.removeItem('housemate');
 
         store.dispatch(removeUserData());
+        store.dispatch(removeHousemateData());
     }
     
     isAuthenticated() {
@@ -84,6 +115,12 @@ class Auth {
         }
 
         return new Date().getTime() < expiresAt;
+    }
+
+    hasHousemateLocally() {
+        const housemate = localStorage.getItem('housemate');
+        console.log(housemate);
+        return !!housemate;
     }
 
     getAccessToken() {

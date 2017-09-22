@@ -6,18 +6,22 @@ var axios = require('axios');
 var app = express();
 var db = require('./db/mongoose.js');
 
-var createHouse = require('./controllers/HouseController').createHouse;
-var HousemateController = require('./controllers/HousemateController');
+const HousemateModel = require('./db/models/HousemateModel');
 
-db.once('open', function() {
-    console.log('Database connected!');
-});
+// Environment Configuration
+const PORT_NUMBER = require('./config.js').DEV_PORT;
 
 // Authentication Middleware
 const checkJwt = require('./auth/jwt.js').checkJwt;
 
-// Environment Configuration
-const PORT_NUMBER = require('./config.js').DEV_PORT;
+const responseGenerator = require('./db/helpers/responseGenerators');
+
+const HouseController = require('./controllers/HouseController');
+const HousemateController = require('./controllers/HousemateController');
+
+db.once('open', function() {
+    console.log('Database connected!');
+});
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -30,14 +34,23 @@ app.get('/private', checkJwt, (req, res) => {
     return res.json({ payload: req.user });
 });
 
-app.post('/houses', checkJwt, (req, res) => {
-    console.log(createHouse);
-    return createHouse(req, res) 
+// Get the housemate for the associated auth0 ID.
+app.get('/me', checkJwt, (req, res) => {
+    const housemate = HousemateModel.findOne({ authId: req.user.sub }, (error, housemate) => {
+        if(error) {
+            return responseGenerator.errorResponse(res, 404, error.name);
+        }
+
+        return responseGenerator.listResponse(res, housemate);
+    });
 });
 
+app.post('/houses', checkJwt, HouseController.createHouse);
+app.get('/housemates', checkJwt, HousemateController.getHousemates);
+app.post('/housemates/self', checkJwt, HousemateController.createSelf);
 app.post('/housemates', checkJwt, HousemateController.createHousemate);
 app.post('/housemates/:id', checkJwt, HousemateController.editHousemate);
-app.get('/housemates', checkJwt, HousemateController.getHousemates);
+
 
 console.log(`Listening on port ${ PORT_NUMBER }`);
 app.listen(PORT_NUMBER);

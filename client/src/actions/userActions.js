@@ -1,5 +1,4 @@
-import { authAxios } from './axios';
-import Auth from './auth';
+import Auth from '../auth';
 
 export const ADD_USER_DATA = 'ADD_USER_DATA';
 export const addUserData = (user) => {

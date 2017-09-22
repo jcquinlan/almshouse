@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { addUserData } from '../actions';
+import { addUserData } from '../actions/userActions';
 import Auth from '../auth';
 
 const LoginView = (props) => {

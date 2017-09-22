@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-const HouseSchema = require('../schema/HouseSchema.js');
+const HouseSchema = require('../schema/HouseSchema');
 
 var HouseModel = mongoose.model('House', HouseSchema);
 
-module.export = HouseModel;
+module.exports = HouseModel;
