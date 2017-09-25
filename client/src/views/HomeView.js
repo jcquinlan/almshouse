@@ -8,14 +8,6 @@ import NewHousemateForm from '../components/newHousemateForm';
 class HomeView extends Component {
     constructor(){
         super();
-
-        this.getPrivate = this.getPrivate.bind(this);
-    }
-
-    componentDidMount(){
-        if(!this.props.userData) {
-            this.props.getUserDetails();
-        }
     }
     
     render(){
@@ -24,9 +16,8 @@ class HomeView extends Component {
         return (
             <div>
                 { userError && this.renderUserErrors() }
-                { housemateData && housemateData.firstName }
                 Home! - { userData ? this.renderUsername() : 'Anonymous' }
-                { !housemateData && <NewHousemateForm /> }
+                { this.renderNewHousemateForm() }
             </div>
         );
     }
@@ -41,10 +32,12 @@ class HomeView extends Component {
         return <span>{ userData.nickname }</span>
     }
 
-    getPrivate(){
-        axios.get('/private').then(res => {
-            console.log(res);
-        });
+    renderNewHousemateForm() {
+        const { housemateData } = this.props;
+
+        if(!housemateData) {
+            return <NewHousemateForm />
+        }
     }
 }
 

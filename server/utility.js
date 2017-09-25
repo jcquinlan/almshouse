@@ -8,6 +8,11 @@ function guid() {
     s4() + '-' + s4() + s4() + s4();
 }
 
+function buildMetadataKey() {
+  return 'https://almshouseapp.com/-user_metadata';
+}
+
 module.exports = {
   guid,
+  buildMetadataKey,
 }

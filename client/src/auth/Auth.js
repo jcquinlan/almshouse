@@ -13,8 +13,10 @@ class Auth {
         clientID: 'KENtWWXJahMARvhh1XHt_XocZpa6HKzP',
         redirectUri: 'http://localhost:3000/login-callback',
         responseType: 'token id_token',
-        scope: 'openid profile'
+        scope: 'openid profile user_metadata'
       });
+
+    namespace = 'https://almshouseapp.com/';
 
     constructor(){
           this.login = this.login.bind(this);
@@ -43,15 +45,11 @@ class Auth {
             const profile = jwtDecode(idToken);
             store.dispatch(addUserData(profile));
 
-            // If we have the user's housemate information locally, store it in Redux.
-            // We use this separately to keep track of what info one is allowed to see,
-            // Instead of querying Mongo everytime using the ID sent by auth0.
-            if(this.hasHousemateLocally()) {
-                const housemate = localStorage.getItem("housemate");
-                store.dispatch(addHousemateData(JSON.parse(housemate)));
-            } else {
-                HousemateController.getSelf()
-                    .then(this.handleSelfResponse)
+            // Check to see if the user's housemate is attached to their idToken.
+            // If it is, at it to Redux.
+            const housemate = profile[this.buildMetadateKey()].housemate;
+            if(housemate) {
+                store.dispatch(addHousemateData(housemate));
             }
         }
     }
@@ -74,16 +72,38 @@ class Auth {
                 // for OAuth purposes.
                 configureAxiosDefaults({ accessToken: authResult.accessToken, idToken: authResult.idToken });
 
+                // Save the relevant auth information to localStorage so the user stays logged in
                 this.setSession(authResult);
-                store.dispatch(addUserData(authResult.idTokenPayload));
 
-                HousemateController.getSelf()
-                    .then(this.handleSelfResponse);
+                let claims = this.separateUserProfile(authResult.idTokenPayload);
+                
+                // Add the current user to Redux.
+                store.dispatch(addUserData(claims.userProfile));
+
+                // If a housemate is returned in the metadata, add that to Redux.
+                if(claims.user_metadata.housemate) {
+                    store.dispatch(addHousemateData(claims.user_metadata.housemate));
+                }
                     
             } else if (err) {
                 console.log(err);
             }
         });
+    }
+
+    // Custom claims need to be namespaced, so we need to know how to find the key
+    // we want.
+    buildMetadateKey() {
+        return this.namespace + '-user_metadata';
+    }
+
+    // The user profile contains some standard OIDC claims, but also some custom ones
+    // This method separates the custom claims for the standard ones so we can
+    // Handle them differently if we need.
+    separateUserProfile(profile){
+        let {[this.buildMetadateKey()]: user_metadata, ...res} = profile;
+        return { user_metadata, userProfile: res }
+
     }
     
     setSession(authResult) {
@@ -99,7 +119,6 @@ class Auth {
         localStorage.removeItem('access_token');
         localStorage.removeItem('id_token');
         localStorage.removeItem('expires_at');
-        localStorage.removeItem('housemate');
 
         store.dispatch(removeUserData());
         store.dispatch(removeHousemateData());
@@ -115,12 +134,6 @@ class Auth {
         }
 
         return new Date().getTime() < expiresAt;
-    }
-
-    hasHousemateLocally() {
-        const housemate = localStorage.getItem('housemate');
-        console.log(housemate);
-        return !!housemate;
     }
 
     getAccessToken() {

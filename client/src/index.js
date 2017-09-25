@@ -14,27 +14,21 @@ import {
 
 import rootReducer from './reducers';
 
-import Auth from './auth';
-
 export const store = createStore(
   rootReducer,
-  applyMiddleware(thunk)
+  applyMiddleware(thunk),
+  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
 )
 
 ReactDOM.render(
     (
         <Provider store={store}>
             <Router>
-                <Route path="/" render={() => {
-                    // When entering the application, check
-                    // to see if the user already has their information
-                    // in localStorage
-                    Auth.searchForLogin();
-                    return <App />
-                }} />
+                <Route path="/" component={App}/>
             </Router>
         </Provider>
     ),
     document.getElementById('root')
 );
+
 registerServiceWorker();

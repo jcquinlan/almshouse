@@ -151,7 +151,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        addHousemate(housemate) {
+        addHousemateData(housemate) {
             dispatch(addHousemateData(housemate));
         },
 

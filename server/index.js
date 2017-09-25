@@ -12,7 +12,8 @@ const HousemateModel = require('./db/models/HousemateModel');
 const PORT_NUMBER = require('./config.js').DEV_PORT;
 
 // Authentication Middleware
-const checkJwt = require('./auth/jwt.js').checkJwt;
+const checkJwt = require('./middlewares/jwt');
+const ensureHousemate = require('./middlewares/ensureHousemate');
 
 const responseGenerator = require('./db/helpers/responseGenerators');
 
@@ -25,6 +26,8 @@ db.once('open', function() {
 
 app.use(bodyParser.json());
 app.use(cors());
+app.use(checkJwt);
+app.use('/houses', ensureHousemate);
 
 app.get('/', (req, res) => {
     return res.json({ payload: 'It\'s working!' });
@@ -45,11 +48,11 @@ app.get('/me', checkJwt, (req, res) => {
     });
 });
 
-app.post('/houses', checkJwt, HouseController.createHouse);
-app.get('/housemates', checkJwt, HousemateController.getHousemates);
-app.post('/housemates/self', checkJwt, HousemateController.createSelf);
-app.post('/housemates', checkJwt, HousemateController.createHousemate);
-app.post('/housemates/:id', checkJwt, HousemateController.editHousemate);
+app.post('/houses', HouseController.createHouse);
+app.get('/housemates', HousemateController.getHousemates);
+app.post('/housemates/self', HousemateController.createSelf);
+app.post('/housemates', HousemateController.createHousemate);
+app.post('/housemates/:id', HousemateController.editHousemate);
 
 
 console.log(`Listening on port ${ PORT_NUMBER }`);

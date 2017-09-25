@@ -2,6 +2,7 @@ const HouseModel = require('../db/models/HouseModel');
 const responses = require('../db/helpers/responseGenerators');
 
 const createHouse = (req, res) => {
+    console.log(req.user);
     const options = req.body;
     options.createdBy = req.user.sub;
 

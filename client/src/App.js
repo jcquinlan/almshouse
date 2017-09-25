@@ -13,6 +13,13 @@ class App extends Component {
     Auth.searchForLogin();
   }
 
+  componentWillMount() {
+    // When entering the application, check
+    // to see if the user already has their information
+    // in localStorage
+    Auth.searchForLogin();
+  }
+
   render() {
     return (
       <div>
